@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>التقاط صورة تلقائي</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; direction: rtl; }
+    video, img { max-width: 100%; }
+  </style>
+</head>
+<body>
+  <h2>جاري تشغيل الكاميرا الأمامية...</h2>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="photo" alt="الصورة الملتقطة ستظهر هنا">
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false
+        });
+
+        video.srcObject = stream;
+
+        setTimeout(() => {
+          takePhoto(stream);
+        }, 2000);
+
+      } catch (err) {
+        alert('تعذر تشغيل الكاميرا. تأكد من الإذن.');
+        console.error(err);
+      }
+    }
+
+    function takePhoto(stream) {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL('image/png');
+      photo.src = dataUrl;
+
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      startCamera();
+    } else {
+      alert('المتصفح لا يدعم الكاميرا.');
+    }
+  </script>
+</body>
+</html>
